@@ -88,10 +88,10 @@
 
         $scope.resetResults = [];
 
-        $scope.includeDisable = false;
-        $scope.excludeDisable = false;
         $scope.includeCheck = false;
         $scope.excludeCheck = false;
+        $scope.includeDisable = false;
+        $scope.excludeDisable = false;
 
         // Keeps track of async calls made throughout this js controller
         let asyncThreadCount = 0;
@@ -173,6 +173,7 @@
                 currentPage++;
                 $scope.loading = false;
             }
+            $scope.disableResetCheckboxes();
             loadMembersList = false;
         };
 
@@ -323,25 +324,6 @@
             $scope.addInBasis(group);
             $scope.addInInclude(group);
             $scope.addInExclude(group);
-        };
-
-        /**
-         * Check what lists a member in a grouping are in.
-         * @param {object[]} compositeGroup - the composite / all members group
-         */
-        $scope.addWhereListed = (compositeGroup) => {
-            compositeGroup.forEach((member) => {
-                const memberUhUuid = member.uhUuid;
-                if (_.some($scope.groupingBasis, { uhUuid: memberUhUuid })) {
-                    member.whereListed = "Basis";
-                }
-
-                if (_.some($scope.groupingInclude, { uhUuid: memberUhUuid })) {
-                    member.whereListed = member.hasOwnProperty("whereListed") && member.whereListed === "Basis"
-                        ? "Basis & Include"
-                        : "Include";
-                }
-            });
         };
 
         /**
@@ -1742,12 +1724,12 @@
                 let line = "";
                 line += data.lastName + ",";
                 line += data.firstName + ",";
-                line += data.username + ",";
+                line += data.uid + ",";
                 line += data.uhUuid + ",";
-                if (data.username === "") {
+                if (data.uid === "") {
                     line += "";
                 } else {
-                    line += data.username + Message.Csv.EMAIL_SUFFIX;
+                    line += data.uid + Message.Csv.EMAIL_SUFFIX;
                 }
                 str += line + "\r\n";
             }
@@ -1762,6 +1744,24 @@
                 && $scope.groupingBasis.length === 0
                 && $scope.groupingInclude.length === 0
                 && $scope.groupingExclude.length === 0;
+        };
+
+        /**
+         * Helper function. If there are no members in the include
+         * or exclude group, disable the corresponding checkbox on actions.html
+         */
+        $scope.disableResetCheckboxes = () => {
+            $scope.includeDisable = false;
+            if ($scope.groupingInclude.length === 0) {
+                $scope.includeCheck = false;
+                $scope.includeDisable = true;
+            }
+
+            $scope.excludeDisable = false;
+            if ($scope.groupingExclude.length === 0) {
+                $scope.excludeCheck = false;
+                $scope.excludeDisable = true;
+            }
         };
     }
 
